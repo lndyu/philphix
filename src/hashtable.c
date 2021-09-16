@@ -66,12 +66,16 @@ void insertData(HashTable *table, void *key, void *data) {
 
 /* Task 1.3 */
 void *findData(HashTable *table, void *key) {
-  HashBucketEntry *entry = (table->buckets[table->hashFunction(key)]);
-  while(entry != NULL && *entry != NULL){
-      if(table->equalFunction(entry->key,*key)){
-	  return entry->data;
-      } 
-      entry = &(entry->next);
+  unsigned int location = table->hasFunction(key);
+  if(table->buckets[location] == NULL){
+         return NULL;
+  }
+  HashBucketEntry *current = table->buckets[location]
+  while(current->next != NULL){
+	 if(table->equalFunction(current->key,key)){
+		return current->data;
+	 }
+         current = current->next;
   }
   return NULL;
   // HINT:
