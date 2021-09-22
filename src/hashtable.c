@@ -43,20 +43,26 @@ HashTable *createHashTable(int size, unsigned int (*hashFunction)(void *),
 
 /* Task 1.2 */
 void insertData(HashTable *table, void *key, void *data) {
-  unsigned int location = table->hasFunction(key);
-  HashBucketEntry new;
-  new.key = key;
-  new.data = data;
-  new.next = NULL;
+  unsigned int location = table->hashFunction(key) % table->size;
+  HashBucketEntry *new = malloc(sizeof(HashBucketEntry));
+  if(new == NULL){
+	fprintf(stderr, "malloc failed \n");
+	exit(1);
+  }
+  new->key = key;
+  new->data = data;
+  new->next = NULL;
 
   if(table->buckets[location] == NULL){
-	table->buckets[location] = &new;
+	table->buckets[location] = new;
   }
-  HashBucketEntry *current = table->buckets[location]
-  while(current->next != NULL){
-	current = current->next;
+  else{
+     HashBucketEntry *current = table->buckets[location];
+     while(current->next != NULL){
+   	current = current->next;
+     }
+  current->next = new;
   }
-  current->next = &new;
 
   // HINT:
   // 1. Find the right hash bucket location with table->hashFunction.
@@ -66,14 +72,14 @@ void insertData(HashTable *table, void *key, void *data) {
 
 /* Task 1.3 */
 void *findData(HashTable *table, void *key) {
-  unsigned int location = table->hasFunction(key);
+  unsigned int location = table->hashFunction(key) % table->size;
   if(table->buckets[location] == NULL){
          return NULL;
   }
-  HashBucketEntry *current = table->buckets[location]
-  while(current->next != NULL){
+  HashBucketEntry *current = table->buckets[location];
+  while(current != NULL){
 	 if(table->equalFunction(current->key,key)){
-		return current->data;
+              return current->data;
 	 }
          current = current->next;
   }
@@ -85,16 +91,31 @@ void *findData(HashTable *table, void *key) {
 
 /* Task 2.1 */
 unsigned int stringHash(void *s) {
-  // -- TODO --
-  fprintf(stderr, "need to implement stringHash\n");
-  /* To suppress compiler warning until you implement this function, */
-  return 0;
+  unsigned int length = strlen(s);
+  int i;
+  int sum = 0;
+  char *string = (char*)s;
+  for(i = 1; i<length+1; i++){
+	int c = string[i] - 'a' + 1;
+	sum = (sum<<1) + c * i;
+  }
+  return sum;
 }
 
 /* Task 2.2 */
-int stringEquals(void *s1, void *s2) {
-  // -- TODO --
-  fprintf(stderr, "You need to implement stringEquals");
-  /* To suppress compiler warning until you implement this function */
-  return 0;
+int stringEquals(void *s1, void *s2) { 
+  unsigned int l1 = strlen(s1);
+  unsigned int l2 = strlen(s2);
+  int i;
+  char *string1 = (char*)s1;
+  char *string2 = (char*)s2;
+  if(l1 != l2){
+	return 0;
+  }
+  for(i = 0; i < l1; i++){
+	if(string1[i] != string2[i]){
+		return 0;
+	}
+  }
+  return 1;
 }
